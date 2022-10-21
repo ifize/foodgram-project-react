@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from .permissions import Admin, Superuser
 from .serializers import (UserSelfSerializer, UserSerializer,
                           UserSignUpSerializer)
 from .services import check_token, generate_token
@@ -75,7 +74,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
-    permission_classes = [Admin | Superuser]
     lookup_field = 'username'
     pagination_class = PageNumberPagination
 
