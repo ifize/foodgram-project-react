@@ -17,7 +17,6 @@ FIELDS = (
     'username',
     'first_name',
     'last_name',
-    'password'
 )
 
 
@@ -175,7 +174,6 @@ class AddRecipeSerializer(serializers.ModelSerializer):
             recipe.tags.add(tag)
 
     def create(self, validated_data):
-        print(validated_data)
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
