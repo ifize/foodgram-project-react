@@ -1,13 +1,13 @@
-from rest_framework import serializers
 import base64
-from django.core.files.base import ContentFile
-from core.models import Ingredient, Tag, Recipe, IngredientRecipe
-from rest_framework.fields import SerializerMethodField
-from rest_framework import status
-from rest_framework.exceptions import ValidationError
-from djoser.serializers import UserCreateSerializer, UserSerializer
-from django.contrib.auth import get_user_model
 
+from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SerializerMethodField
+
+from core.models import Ingredient, IngredientRecipe, Recipe, Tag
 
 User = get_user_model()
 
@@ -232,7 +232,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return user.shopping_cart.filter(id=obj.id).exists()
+        return user.shopping_cart.filter(recipe=obj).exists()
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):

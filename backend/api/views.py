@@ -1,15 +1,21 @@
-from rest_framework import viewsets, filters
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.response import Response
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
-from core.models import Ingredient, Tag, Recipe, Favorite
-from .serializers import RecipeReadSerializer, IngredientSerializer, TagSerializer, AddRecipeSerializer, ShortRecipeSerializer
-from .permissions import IsAdminAuthorOrReadOnlyPermission
-from rest_framework.decorators import action
-from rest_framework import status
+from django.db.models import Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from .filters import RecipeFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.response import Response
+
+from core.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                         ShoppingCart, Tag)
+
+from .filters import RecipeFilter
+from .permissions import IsAdminAuthorOrReadOnlyPermission
+from .serializers import (AddRecipeSerializer, IngredientSerializer,
+                          RecipeReadSerializer, ShortRecipeSerializer,
+                          TagSerializer)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -49,6 +55,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['post', 'delete'],
         permission_classes=[IsAuthenticated]
     )
+    def shopping_cart(self, request, pk):
+        if request.method == 'POST':
+            return self.add_recipe(ShoppingCart, request.user, pk)
+        elif request.method == 'DELETE':
+            return self.delete_recipe(ShoppingCart, request.user, pk)
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
     def favorite(self, request, pk):
         if request.method == 'POST':
             return self.add_recipe(Favorite, request.user, pk)
@@ -71,3 +88,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response('Такого рецепта уже нет',
                         status=status.HTTP_400_BAD_REQUEST)
+
+    @action(
+        detail=False,
+        methods=['GET'],
+        permission_classes=[IsAuthenticated],
+        url_path='download_shopping_cart',
+    )
+    def download_shopping_cart(self, request):
+        ingredient_list = 'Cписок покупок:'
+        ingredients = IngredientRecipe.objects.filter(
+            recipe__shopping_cart__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(amount=Sum('amount'))
+        for num, i in enumerate(ingredients):
+            ingredient_list += (
+                f"\n{i['ingredient__name']} - "
+                f"{i['amount']} {i['ingredient__measurement_unit']}"
+            )
+            if num < ingredients.count() - 1:
+                ingredient_list += ', '
+        file = 'shopping_list'
+        response = HttpResponse(
+            ingredient_list, 'Content-Type: application/pdf'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{file}.pdf"'
+        return response
