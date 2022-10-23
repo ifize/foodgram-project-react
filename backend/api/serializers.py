@@ -17,10 +17,12 @@ FIELDS = (
     'username',
     'first_name',
     'last_name',
+    'is_subscribed'
 )
 
 
 class UserCreateSerializer(UserCreateSerializer):
+    """Сериализатор для создания пользователя"""
     class Meta:
         model = User
         fields = tuple(User.REQUIRED_FIELDS) + (
@@ -31,6 +33,8 @@ class UserCreateSerializer(UserCreateSerializer):
 
 class UserSerializer(UserSerializer):
     """Сериализатор для пользователя"""
+    is_subscribed = SerializerMethodField()
+
     class Meta:
         model = User
         fields = FIELDS
@@ -63,12 +67,12 @@ class SubscribeSerializer(UserSerializer):
         user = self.context.get('request').user
         if user.subscribing.filter(author=author).exists():
             raise ValidationError(
-                detail='Вы уже подписаны на этого пользователя!',
+                detail='Вы уже подписаны на этого пользователя',
                 code=status.HTTP_400_BAD_REQUEST
             )
         if user == author:
             raise ValidationError(
-                detail='Вы не можете подписаться на самого себя!',
+                detail='Вы не можете подписаться на самого себя',
                 code=status.HTTP_400_BAD_REQUEST
             )
         return data
