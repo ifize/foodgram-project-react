@@ -1,9 +1,9 @@
 from rest_framework import viewsets, filters
 from rest_framework.pagination import LimitOffsetPagination
 
-
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from core.models import Ingredient, Tag, Recipe
-from .serializers import RecipeSerializer, IngredientSerializer, TagSerializer
+from .serializers import RecipeReadSerializer, IngredientSerializer, TagSerializer, AddRecipeSerializer
 from .permissions import IsAdminAuthorOrReadOnlyPermission
 
 
@@ -26,9 +26,13 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов"""
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminAuthorOrReadOnlyPermission,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user,)
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return RecipeReadSerializer
+        return AddRecipeSerializer

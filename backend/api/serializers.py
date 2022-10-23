@@ -116,25 +116,76 @@ class TagSerializer(serializers.ModelSerializer):
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор для связывания ингредиента с рецептом"""
     id = serializers.PrimaryKeyRelatedField(
-        read_only=True,
-        source='ingredient.id'
-    )
-    name = serializers.CharField(
-        read_only=True,
-        source='ingredient.name'
-    )
-    measurement_unit = serializers.CharField(
-        read_only=True,
-        source='ingredient.measurement_unit'
+        queryset=Ingredient.objects.all()
     )
 
     class Meta:
         model = IngredientRecipe
-        fields = ['id', 'name', 'measurement_unit', 'amount']
+        fields = ['id', 'amount']
 
 
-class RecipeSerializer(serializers.ModelSerializer):
-    """Сериалайзатор для рецептов"""
+class AddRecipeSerializer(serializers.ModelSerializer):
+    """Сериализатор для добавления рецептов"""
+    author = UserSerializer(read_only=True)
+    name = serializers.CharField(max_length=254)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+    )
+    image = Base64ImageField(allow_null=True)
+    ingredients = IngredientRecipeSerializer(many=True)
+
+    class Meta:
+        model = Recipe
+        fields = ['id', 'tags', 'author', 'ingredients', 'name', 'image',
+                  'text', 'cooking_time']
+
+    def validate_ingredients(self, ingredients):
+        if not ingredients:
+            raise ValidationError('Отсутствие ингредиентов')
+        for ingredient in ingredients:
+            ingredient_id = ingredient['id']
+            if ingredient_id in ingredients:
+                raise ValidationError(
+                    f'Такой ингредиент:{ingredient} уже добавлен'
+                )
+            amount = ingredient['amount']
+            if not int(amount) > 0:
+                raise ValidationError('Недопустимое количество ингредиентов')
+        return ingredients
+
+    def validate_tags(self, tags):
+        if not tags:
+            raise ValidationError('Отсутствие тега')
+        validated_tags = set()
+        for tag in tags:
+            validated_tags.add(tag)
+        return validated_tags
+
+    def add_ingredients(self, ingredients, recipe):
+        for ingredient in ingredients:
+            IngredientRecipe.objects.get_or_create(
+                recipe=recipe,
+                ingredient=ingredient['id'],
+                amount=ingredient['amount'],
+            )
+
+    def add_tags(self, tags, recipe):
+        for tag in tags:
+            recipe.tags.add(tag)
+
+    def create(self, validated_data):
+        print(validated_data)
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(**validated_data)
+        self.add_tags(tags, recipe)
+        self.add_ingredients(ingredients, recipe)
+        return recipe
+
+
+class RecipeReadSerializer(serializers.ModelSerializer):
+    """Сериалайзатор для отображения рецептов"""
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = IngredientRecipeSerializer(
@@ -143,6 +194,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         source='ingredient_recipes'
     )
     image = Base64ImageField(allow_null=True)
+    name = serializers.CharField(max_length=254)
 
     class Meta:
         model = Recipe
