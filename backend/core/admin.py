@@ -31,7 +31,7 @@ class RecipeAdmin(admin.ModelAdmin):
     save_on_top = True
 
     def get_image(self, obj):
-        return mark_safe(f'<img src={{obj.image.url}} width="100" hieght="100"')
+        return mark_safe(f'<img src={obj.image.url} width="100" hieght="100"')
 
     get_image.short_description = 'Изображение'
 
