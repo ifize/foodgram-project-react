@@ -10,7 +10,6 @@ from rest_framework.response import Response
 
 from core.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                          ShoppingCart, Tag)
-
 from .filters import RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnlyPermission
 from .serializers import (AddRecipeSerializer, IngredientSerializer,
@@ -101,11 +100,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe__shopping_cart__user=request.user
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
+        ).annotate(amount_sum=Sum('amount'))
         for num, i in enumerate(ingredients):
             ingredient_list += (
                 f"\n{i['ingredient__name']} - "
-                f"{i['amount']} {i['ingredient__measurement_unit']}"
+                f"{i['amount_sum']} {i['ingredient__measurement_unit']}"
             )
             if num < ingredients.count() - 1:
                 ingredient_list += ', '

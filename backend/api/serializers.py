@@ -1,13 +1,11 @@
-import base64
-
 from django.contrib.auth import get_user_model
-from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 
 from core.models import Ingredient, IngredientRecipe, Recipe, Tag
+from .fields import Base64ImageField
 
 User = get_user_model()
 
@@ -40,7 +38,7 @@ class UserSerializer(UserSerializer):
         fields = FIELDS
 
     def validate_username(self, value):
-        if value == 'me':
+        if value.lower() == 'me':
             raise serializers.ValidationError("Choose another name")
         return value
 
@@ -88,16 +86,6 @@ class SubscribeSerializer(UserSerializer):
             recipes = recipes[:int(limit)]
         serializer = ShortRecipeSerializer(recipes, many=True, read_only=True)
         return serializer.data
-
-
-class Base64ImageField(serializers.ImageField):
-    """Сериализатор для конвертации изображения"""
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -166,12 +154,13 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         return validated_tags
 
     def add_ingredients(self, ingredients, recipe):
-        for ingredient in ingredients:
-            IngredientRecipe.objects.get_or_create(
+        IngredientRecipe.objects.bulk_create(
+            [IngredientRecipe(
                 recipe=recipe,
                 ingredient=ingredient['id'],
                 amount=ingredient['amount'],
-            )
+            ) for ingredient in ingredients]
+        )
 
     def add_tags(self, tags, recipe):
         for tag in tags:

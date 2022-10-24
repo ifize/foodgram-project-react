@@ -132,3 +132,4 @@ dmypy.json
 .idea
 /frontend/node_modules/
 media/
+.vscode/
