@@ -1,10 +1,10 @@
+from core.models import Ingredient, IngredientRecipe, Recipe, Tag
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 
-from core.models import Ingredient, IngredientRecipe, Recipe, Tag
 from .fields import Base64ImageField
 
 User = get_user_model()
@@ -205,11 +205,11 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = [
-                'id', 'tags', 'author',
-                'ingredients', 'name', 'image',
-                'text', 'cooking_time',
-                'is_favorited', 'is_in_shopping_cart'
-                ]
+            'id', 'tags', 'author',
+            'ingredients', 'name', 'image',
+            'text', 'cooking_time',
+            'is_favorited', 'is_in_shopping_cart'
+        ]
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user

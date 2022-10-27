@@ -1,3 +1,5 @@
+from core.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                         ShoppingCart, Tag)
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -8,8 +10,6 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                         ShoppingCart, Tag)
 from .filters import RecipeFilter
 from .permissions import IsAdminAuthorOrReadOnlyPermission
 from .serializers import (AddRecipeSerializer, IngredientSerializer,
@@ -57,7 +57,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self.add_recipe(ShoppingCart, request.user, pk)
-        elif request.method == 'DELETE':
+        else:
             return self.delete_recipe(ShoppingCart, request.user, pk)
 
     @action(
@@ -68,7 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk):
         if request.method == 'POST':
             return self.add_recipe(Favorite, request.user, pk)
-        elif request.method == 'DELETE':
+        else:
             return self.delete_recipe(Favorite, request.user, pk)
 
     def add_recipe(self, model, user, pk):

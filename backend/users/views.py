@@ -1,3 +1,4 @@
+from api.serializers import SubscribeSerializer, UserSerializer
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
@@ -7,7 +8,6 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.serializers import SubscribeSerializer, UserSerializer
 from .models import Subscribe
 
 User = get_user_model()
@@ -36,7 +36,7 @@ class UsersViewSet(UserViewSet):
             Subscribe.objects.create(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'DELETE':
+        else:
             subscription = get_object_or_404(Subscribe,
                                              user=user,
                                              author=author)
