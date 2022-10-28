@@ -1,10 +1,25 @@
 version: '3.3'
 services:
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - data_value:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+  backend:
+    image: ifize/foodgram-backend:latest
+    restart: always
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media/
+      - redoc:/app/api/docs/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: ifize/foodgram-frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
   nginx:
@@ -15,3 +30,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+
+volumes:
+  static_value:
+  media_value:
