@@ -57,8 +57,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self.add_recipe(ShoppingCart, request.user, pk)
-        else:
-            return self.delete_recipe(ShoppingCart, request.user, pk)
+        return self.delete_recipe(ShoppingCart, request.user, pk)
 
     @action(
         detail=True,
@@ -68,8 +67,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk):
         if request.method == 'POST':
             return self.add_recipe(Favorite, request.user, pk)
-        else:
-            return self.delete_recipe(Favorite, request.user, pk)
+        return self.delete_recipe(Favorite, request.user, pk)
 
     def add_recipe(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
