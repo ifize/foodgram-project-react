@@ -1,5 +1,5 @@
-from django.core.management import BaseCommand
 from core.models import Tag
+from django.core.management import BaseCommand
 
 
 class Command(BaseCommand):
