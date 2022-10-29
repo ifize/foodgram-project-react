@@ -81,7 +81,7 @@ jobs:
           port: ${{ secrets.PORT }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          #passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             sudo docker-compose stop
             touch .env
