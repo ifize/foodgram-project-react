@@ -6,11 +6,11 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import RecipeFilter
+from .pagination import CustomPagination
 from .permissions import IsAdminAuthorOrReadOnlyPermission
 from .serializers import (AddRecipeSerializer, IngredientSerializer,
                           RecipeReadSerializer, ShortRecipeSerializer,
@@ -36,7 +36,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет для рецептов"""
     queryset = Recipe.objects.all()
-    pagination_class = LimitOffsetPagination
+    pagination_class = CustomPagination
     permission_classes = (IsAdminAuthorOrReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
