@@ -6,7 +6,7 @@ load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY', 'asdfsad')
 
 DEBUG = False
 
@@ -76,6 +76,17 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT')
     }
 }
+
+# FIX Тестирование на вирт. окружении
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+# WARNINGS: Auto-created primary key used when not defining a primary key type
+DEFAULT_AUTO_FIELD ='django.db.models.AutoField'
 
 
 AUTH_PASSWORD_VALIDATORS = [
