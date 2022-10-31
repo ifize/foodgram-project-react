@@ -46,7 +46,7 @@ class UserSerializer(UserSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return user.subscribing.filter(author=obj).exists()
+        return user.subscriber.filter(author=obj).exists()
 
 
 class SubscribeSerializer(UserSerializer):
@@ -104,8 +104,19 @@ class TagSerializer(serializers.ModelSerializer):
         read_only_fields = '__all__',
 
 
+class IngredientAmountSerializer(serializers.ModelSerializer):
+    """Сериализатор для связывания ингредиента с рецептом для записи"""
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all()
+    )
+
+    class Meta:
+        model = IngredientRecipe
+        fields = ['id', 'amount']
+
+
 class IngredientRecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор для связывания ингредиента с рецептом"""
+    """Сериализатор для связывания ингредиента с рецептом для чтения"""
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -126,7 +137,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         many=True,
     )
     image = Base64ImageField(allow_null=True)
-    ingredients = IngredientRecipeSerializer(many=True)
+    ingredients = IngredientAmountSerializer(many=True)
 
     class Meta:
         model = Recipe
@@ -155,6 +166,23 @@ class AddRecipeSerializer(serializers.ModelSerializer):
             validated_tags.add(tag)
         return validated_tags
 
+    def validate(self, data):
+        ingredients = data['ingredients']
+        if not ingredients:
+            raise ValidationError(
+                'Требуется выбрать хотя бы один ингредиент!',
+                code=status.HTTP_400_BAD_REQUEST,
+            )
+        know_ingredients = []
+        for ingredient in ingredients:
+            if ingredient['id'] in know_ingredients:
+                raise ValidationError(
+                    'Ингредиенты повторяются',
+                    code=status.HTTP_400_BAD_REQUEST
+                )
+            know_ingredients.append(ingredient['id'])
+        return data
+
     def add_ingredients(self, ingredients, recipe):
         IngredientRecipe.objects.bulk_create(
             [IngredientRecipe(
@@ -176,12 +204,17 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         self.add_ingredients(ingredients, recipe)
         return recipe
 
-    def update(self, recipe, validated_data):
+    def update(self, instance, validated_data):
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        self.add_tags(tags, recipe)
-        self.add_ingredients(ingredients)
-        return super().update(recipe, validated_data)
+        instance = super().update(instance, validated_data)
+        instance.tags.clear()
+        instance.tags.set(tags)
+        instance.ingredients.clear()
+        self.add_ingredients(recipe=instance,
+                             ingredients=ingredients)
+        instance.save()
+        return instance
 
     def to_representation(self, recipe):
         request = self.context.get('request')
