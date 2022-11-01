@@ -7,14 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from core.models import (
-    Favorite,
-    Ingredient,
-    IngredientRecipe,
-    Recipe,
-    ShoppingCart,
-    Tag
-)
 from .filters import RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAdminAuthorOrReadOnlyPermission
@@ -24,6 +16,14 @@ from .serializers import (
     RecipeReadSerializer,
     ShortRecipeSerializer,
     TagSerializer
+)
+from core.models import (
+    Favorite,
+    Ingredient,
+    IngredientRecipe,
+    Recipe,
+    ShoppingCart,
+    Tag
 )
 
 

@@ -4,8 +4,8 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 
-from core.models import Ingredient, IngredientRecipe, Recipe, Tag
 from .fields import Base64ImageField
+from core.models import Ingredient, IngredientRecipe, Recipe, Tag
 
 User = get_user_model()
 
