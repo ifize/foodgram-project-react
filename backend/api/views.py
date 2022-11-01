@@ -1,5 +1,3 @@
-from core.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                         ShoppingCart, Tag)
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -9,12 +7,24 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from core.models import (
+    Favorite,
+    Ingredient,
+    IngredientRecipe,
+    Recipe,
+    ShoppingCart,
+    Tag
+)
 from .filters import RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAdminAuthorOrReadOnlyPermission
-from .serializers import (AddRecipeSerializer, IngredientSerializer,
-                          RecipeReadSerializer, ShortRecipeSerializer,
-                          TagSerializer)
+from .serializers import (
+    AddRecipeSerializer,
+    IngredientSerializer,
+    RecipeReadSerializer,
+    ShortRecipeSerializer,
+    TagSerializer
+)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

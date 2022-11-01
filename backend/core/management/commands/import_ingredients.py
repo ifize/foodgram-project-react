@@ -1,8 +1,9 @@
 import csv
 from pathlib import Path
 
-from core.models import Ingredient
 from django.core.management import BaseCommand
+
+from core.models import Ingredient
 from foodgram.settings import BASE_DIR
 
 PROJECT_DIR = Path(BASE_DIR).resolve().joinpath('data')

@@ -1,10 +1,10 @@
-from core.models import Ingredient, IngredientRecipe, Recipe, Tag
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField
 
+from core.models import Ingredient, IngredientRecipe, Recipe, Tag
 from .fields import Base64ImageField
 
 User = get_user_model()
